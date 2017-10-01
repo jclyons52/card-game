@@ -7,7 +7,7 @@ import { CardProps } from './components/Card'
 import Deck from './components/Deck'
 import { State } from './actions/CardReducer'
 
-// import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap/dist/css/bootstrap.css'
 // import 'bootstrap/dist/css/bootstrap-theme.css'
 // import { Navbar, Jumbotron, Button } from 'react-bootstrap';
 import './App.css';
@@ -43,25 +43,31 @@ class App extends Component<AppProps, any> {
   render() {
     return (
       <div className="App">
-        <button onClick={this.deal} >deal</button>
-        <button onClick={this.shuffle} >shuffle</button>
-        <button onClick={this.props.actions.addPlayer} >Add player</button>
-        <button onClick={this.props.actions.resolvePot} >Resolve Pot</button>
-        {this.props.state.players.map(player => {
-          const actions = {
-            playCards: this.props.actions.playCards,
-            selectCard: this.props.actions.selectCard
-          }
-          return (
-            <Player
-              hand={player.hand}
-              played={player.played}
-              won={player.won}
-              actions={actions}
-              id={player.id}
-            />
-          )
-        })}
+        <div className="container">
+          <div className="row">
+            <button className='btn btn-primary' onClick={this.deal} >deal</button>
+            <button className='btn btn-primary' onClick={this.shuffle} >shuffle</button>
+            <button className='btn btn-primary' onClick={this.props.actions.addPlayer} >Add player</button>
+            <button className='btn btn-primary' onClick={this.props.actions.resolvePot} >Resolve Pot</button>
+          </div>
+          <div className="row">
+            {this.props.state.players.map(player => {
+              const actions = {
+                playCards: this.props.actions.playCards,
+                selectCard: this.props.actions.selectCard
+              }
+              return (
+                <Player
+                  hand={player.hand}
+                  played={player.played}
+                  won={player.won}
+                  actions={actions}
+                  id={player.id}
+                />
+              )
+            })}
+          </div>
+        </div>
       </div>
     );
   }

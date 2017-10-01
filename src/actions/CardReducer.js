@@ -1,6 +1,6 @@
 // @flow
 
-import { HandProps, handValue } from '../components/Hand'
+import { HandProps, handValue, canPlay } from '../components/Hand'
 import { CardProps } from '../components/Card'
 import Deck from '../components/Deck'
 import {
@@ -16,7 +16,8 @@ import {
 
 export interface State {
     players: Player[],
-    deck: Deck
+    deck: Deck,
+    winners: number[]
 }
 
 export interface Player {
@@ -28,7 +29,9 @@ export interface Player {
 
 const initialState: State = {
     players: [],
-    deck: new Deck()
+    deck: new Deck(),
+    playerWins: [],
+    winners: []
 }
 
 function dealHands(state: State, action: Action): State {
@@ -46,11 +49,31 @@ function dealHands(state: State, action: Action): State {
 }
 
 function shuffle(state: State, action: Action): State {
-    state.deck.shuffle()
-    return state
+    const winner = state.players.reduce((winner, player) => {
+        return player.won.cards.length > winner.won.cards.length ? player : winner 
+     }, state.players[0]).id
+     const winners = [ ...state.winners, winner ]
+     const players = state.players.map(player => {
+         const blankPlayer = {
+             hand: {
+                 cards: []
+             },
+             won: {
+                 cards: []
+             },
+             played: {
+                 cards: []
+             }
+         }
+         return { ...player, ...blankPlayer }
+     })
+     return { ...initialState, players, winners, deck: new Deck() }
 }
 
 function playCards(state: State, action: PlayCardsAction): State {
+    if (!canPlay(action.cards)) {
+        return state
+    }
     const players = state.players.map(player => {
         if (player.id !== action.playerId) {
             return player
@@ -118,6 +141,28 @@ function selectCard(state: State, card: CardProps) {
     return { ...state, players }
 }
 
+function reset(state: State): State {
+    const winner = state.players.reduce((winner, player) => {
+       return player.won.cards.length > winner.won.cards.length ? player : winner 
+    }, state.players[0]).id
+    const winners = [ ...state.winners, winner ]
+    const players = state.players.map(player => {
+        const blankPlayer = {
+            hand: {
+                cards: []
+            },
+            won: {
+                cards: []
+            },
+            played: {
+                cards: []
+            }
+        }
+        return { ...player, ...blankPlayer }
+    })
+    return { ...initialState, players, winners }
+}
+
 function reducer(state: State = initialState, action: Action | PlayCardsAction): State {
     switch (action.type) {
         case DEAL_HAND:
@@ -133,7 +178,7 @@ function reducer(state: State = initialState, action: Action | PlayCardsAction):
         case ADD_PLAYER:
             return addPlayer(state, action)
         case SELECT_CARD:
-            return selectCard(state,action.card)
+            return selectCard(state, action.card)
         default:
             return state
     }
